@@ -32,10 +32,8 @@ export function isExactMatch(
   correctSentence: string[],
   ignoreSpace = true
 ): boolean {
-  const normalize = (s: string) => {
+  const normalize = (s: string) =>
     (ignoreSpace ? s.replace(/\s+/g, "") : s).normalize("NFKC");
-  };
-
   return (
     normalize(givenSentence.join("")) === normalize(correctSentence.join(""))
   );

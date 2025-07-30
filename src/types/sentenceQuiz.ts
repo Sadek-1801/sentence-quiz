@@ -4,5 +4,5 @@ export type SentenceQuizData = {
   kunyomiSampleSentenceOne: string;
   onScreenValue: string;
   questionAssociatedKanji: string;
-  type: "kunyomiVocabularyAssembleTheSetenceOne";
+  type: "kunyomiVocabularyAssembleTheSentenceOne";
 };

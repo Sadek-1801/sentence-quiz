@@ -7,10 +7,10 @@ import {
 import type { Word } from "../types/word";
 
 function useSentenceQuiz(sentence: string) {
-  const fullSentence = parseSentence(sentence);
-  const filteredSentence = fullSentence.map((w) => w.kanji);
+  const correctSentence = parseSentence(sentence);
+  const filteredSentence = correctSentence.map((w) => w.kanji);
 
-  const [pool, setPool] = useState<Word[]>(shuffleArray([...fullSentence]));
+  const [pool, setPool] = useState<Word[]>(shuffleArray([...correctSentence]));
   const [assembled, setAssembled] = useState<Word[]>([]);
   const [result, setResult] = useState<null | boolean>(null);
   const [checking, setChecking] = useState(false);
@@ -28,7 +28,7 @@ function useSentenceQuiz(sentence: string) {
   };
 
   const reset = () => {
-    const resetSentence = shuffleArray([...fullSentence]);
+    const resetSentence = shuffleArray([...correctSentence]);
     setPool(resetSentence);
     setAssembled([]);
     setResult(null);
@@ -54,7 +54,7 @@ function useSentenceQuiz(sentence: string) {
   return {
     pool,
     assembled,
-    fullSentence,
+    correctSentence,
     selectWord,
     removeWord,
     reset,

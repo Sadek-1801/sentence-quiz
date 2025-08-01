@@ -1,61 +1,76 @@
-type Props = {
+type CheckAnswerButtonProps = {
   onClick: () => void;
   isLoading: boolean;
   isCorrect: boolean | null;
   onReset: () => void;
   pool: number;
+  label: string;
 };
-
 function CheckAnswerButton({
+  label,
   onClick,
   isLoading,
   isCorrect,
   onReset,
   pool,
-}: Props) {
+}: CheckAnswerButtonProps) {
+  // Determine if the user has assembled the full sentence.
   const finished = pool === 0;
 
-  const renderResult = () => {
-    if (isCorrect === null) return null;
-
-    const resultClass = isCorrect
-      ? "bg-blue-500 hover:bg-blue-700 text-white"
-      : "bg-red-400 hover:bg-red-700 text-black";
-
-    const label = isCorrect ? "Correct" : "Incorrect";
-
-    return (
-      <>
-        <button className={`${resultClass} font-bold py-2 px-4 rounded`}>
-          {label}
+  // This is the core logic for rendering the button and its state.
+  // We use a single button and change its text and behavior based on the state.
+  const renderButton = () => {
+    if (isLoading) {
+      return (
+        <button
+          disabled
+          className="w-40 text-white px-6 py-2 rounded-lg font-medium transition bg-gray-400 cursor-not-allowed"
+        >
+          Checking…
         </button>
+      );
+    }
+
+    if (isCorrect === true) {
+      return (
+        <button
+          disabled
+          className="w-40 text-white px-6 py-2 rounded-lg font-medium transition bg-green-500 cursor-not-allowed"
+        >
+          Correct!
+        </button>
+      );
+    }
+
+    if (isCorrect === false) {
+      return (
         <button
           onClick={onReset}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="w-40 text-white px-6 py-2 rounded-lg font-medium cursor-pointer transition bg-red-500 hover:bg-red-600"
         >
           Try Again
         </button>
-      </>
+      );
+    }
+
+    return (
+      <button
+        onClick={onClick}
+        disabled={!finished}
+        className={`w-40 text-white px-6 py-2 rounded-lg font-medium transition
+        ${
+          finished
+            ? "bg-green-500 hover:bg-green-600 cursor-pointer"
+            : "bg-gray-400 cursor-not-allowed"
+        }`}
+      >
+        {label}
+      </button>
     );
   };
 
   return (
-    <div className="space-y-2 flex flex-col items-center">
-      <button
-        onClick={onClick}
-        disabled={isLoading || !finished || isCorrect !== null}
-        className={`w-40 text-white px-6 py-2 rounded-lg font-medium transition
-    ${
-      isLoading || !finished || isCorrect === true
-        ? "bg-gray-400 cursor-not-allowed"
-        : "bg-green-500 hover:bg-green-600"
-    }`}
-      >
-        {isLoading ? "Checking…" : "Check Answer"}
-      </button>
-
-      <div className="flex gap-2 justify-center">{renderResult()}</div>
-    </div>
+    <div className="space-y-2 flex flex-col items-center">{renderButton()}</div>
   );
 }
 

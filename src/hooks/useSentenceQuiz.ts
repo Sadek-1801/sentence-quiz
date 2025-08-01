@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   isExactMatch,
   parseSentence,
@@ -7,34 +7,53 @@ import {
 import type { Word } from "../types/word";
 
 function useSentenceQuiz(sentence: string) {
-  const correctSentence = parseSentence(sentence);
-  const filteredSentence = correctSentence.map((w) => w.kanji);
-
-  const [pool, setPool] = useState<Word[]>(shuffleArray([...correctSentence]));
+  const [pool, setPool] = useState<Word[]>([]);
   const [assembled, setAssembled] = useState<Word[]>([]);
   const [result, setResult] = useState<null | boolean>(null);
   const [checking, setChecking] = useState(false);
+  const [attempts, setAttempts] = useState(0);
 
-  const selectWord = (word: Word) => {
-    if (assembled.includes(word)) return;
-    setAssembled([...assembled, word]);
-    setPool(pool.filter((w) => w !== word));
-  };
+  // Memoize the parsed sentence to prevent re-computation on every render
+  const correctSentenceWords = useMemo(
+    () => parseSentence(sentence),
+    [sentence]
+  );
+  const filteredSentence = useMemo(
+    () => correctSentenceWords.map((w) => w.kanji),
+    [correctSentenceWords]
+  );
 
-  const removeWord = (index: number) => {
-    const word = assembled[index];
-    setAssembled(assembled.filter((_, i) => i !== index));
-    setPool([...pool, word]);
-  };
-
-  const reset = () => {
-    const resetSentence = shuffleArray([...correctSentence]);
+  // Use a useCallback hook to create a stable reset function
+  const reset = useCallback(() => {
+    const resetSentence = shuffleArray([...correctSentenceWords]);
     setPool(resetSentence);
     setAssembled([]);
     setResult(null);
-  };
+    setAttempts(0); // Reset attempts on new sentence
+    setChecking(false);
+  }, [correctSentenceWords]);
 
-  const checkAnswer = () => {
+  // FIX: This useEffect hook runs every time the 'sentence' changes.
+  // It ensures the quiz state is reset for the new sentence.
+  useEffect(() => {
+    reset();
+  }, [sentence, reset]);
+
+  const selectWord = useCallback((word: Word) => {
+    setAssembled((prev) => [...prev, word]);
+    setPool((prev) => prev.filter((w) => w !== word));
+  }, []);
+
+  const removeWord = useCallback(
+    (index: number) => {
+      const word = assembled[index];
+      setAssembled(assembled.filter((_, i) => i !== index));
+      setPool([...pool, word]);
+    },
+    [assembled, pool]
+  );
+
+  const checkAnswer = useCallback(() => {
     setChecking(true);
 
     if (
@@ -44,23 +63,34 @@ function useSentenceQuiz(sentence: string) {
       )
     ) {
       setResult(true);
+      setAttempts(0);
+      setChecking(false);
+      return;
+    }
+
+    if (attempts === 0) {
+      setAttempts(1);
+      setResult(null);
     } else {
       setResult(false);
+      // setAttempts(0); // This will be handled by the reset logic in useEffect
     }
 
     setChecking(false);
-  };
+  }, [assembled, filteredSentence, attempts]);
 
   return {
     pool,
     assembled,
-    correctSentence,
+    correctSentence: correctSentenceWords,
+    filteredSentence,
     selectWord,
     removeWord,
     reset,
     checkAnswer,
     result,
     checking,
+    attempts,
   };
 }
 

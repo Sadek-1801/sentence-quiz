@@ -23,7 +23,7 @@ function useSentenceQuiz(sentence: string) {
     [correctSentenceWords]
   );
 
-  // Use a useCallback hook to create a stable reset function
+  // Used a useCallback hook to create a stable reset function
   const reset = useCallback(() => {
     const resetSentence = shuffleArray([...correctSentenceWords]);
     setPool(resetSentence);
@@ -33,7 +33,6 @@ function useSentenceQuiz(sentence: string) {
     setChecking(false);
   }, [correctSentenceWords]);
 
-  // FIX: This useEffect hook runs every time the 'sentence' changes.
   // It ensures the quiz state is reset for the new sentence.
   useEffect(() => {
     reset();
@@ -73,7 +72,7 @@ function useSentenceQuiz(sentence: string) {
       setResult(null);
     } else {
       setResult(false);
-      // setAttempts(0); // This will be handled by the reset logic in useEffect
+      // setAttempts(0); 
     }
 
     setChecking(false);
